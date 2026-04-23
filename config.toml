@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#0057B8"          # Azul profesional
+backgroundColor = "#F5F7FA"       # Fondo claro elegante
+secondaryBackgroundColor = "#FFFFFF"
+textColor = "#0A2540"
+font = "sans serif"
