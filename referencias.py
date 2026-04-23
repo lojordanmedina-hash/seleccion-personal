@@ -101,47 +101,46 @@ def modulo_referencias():
         ))
 
         conn.commit()
+
         st.success("✅ Referencia guardada correctamente")
+
+        st.rerun()  # 🔥 CLAVE PARA QUE SE ACTUALICE
 
     # ---------------- MOSTRAR DATOS ----------------
     st.divider()
     st.subheader("📋 Referencias registradas")
 
-    try:
-        df_ref = pd.read_sql(f"""
-            SELECT
-                r.empresa,
-                r.nombre_referente,
-                r.cargo_referente,
-                r.telefono,
-                r.relacion,
-                r.recomendacion
-            FROM referencias r
-            WHERE r.candidato_id = {candidato_id}
-            ORDER BY r.id DESC
-        """, conn)
+    df_ref = pd.read_sql("""
+        SELECT
+            empresa,
+            nombre_referente,
+            cargo_referente,
+            telefono,
+            relacion,
+            recomendacion
+        FROM referencias
+        WHERE candidato_id = ?
+        ORDER BY id DESC
+    """, conn, params=(candidato_id,))
 
-        if df_ref.empty:
-            st.info("Este candidato aún no tiene referencias registradas")
-        else:
-            st.dataframe(df_ref, use_container_width=True)
+    if df_ref.empty:
+        st.info("Este candidato aún no tiene referencias registradas")
+    else:
+        st.dataframe(df_ref, use_container_width=True)
 
-            # ---------------- DESCARGAR EXCEL ----------------
-            st.divider()
-            st.subheader("⬇️ Descargar referencias")
+        # ---------------- DESCARGAR EXCEL ----------------
+        st.divider()
+        st.subheader("⬇️ Descargar referencias")
 
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine="openpyxl") as writer:
-                df_ref.to_excel(writer, index=False, sheet_name="Referencias")
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            df_ref.to_excel(writer, index=False, sheet_name="Referencias")
 
-            st.download_button(
-                label="📥 Descargar Excel de referencias",
-                data=output.getvalue(),
-                file_name=f"referencias_{candidato}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
-
-    except Exception as e:
-        st.error(f"Error al cargar referencias: {e}")
+        st.download_button(
+            label="📥 Descargar Excel de referencias",
+            data=output.getvalue(),
+            file_name=f"referencias_{candidato}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
     conn.close()
